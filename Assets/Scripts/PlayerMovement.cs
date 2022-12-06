@@ -26,12 +26,19 @@ public class PlayerMovement : MonoBehaviour
     public AudioSource audiosource;
     public AudioClip WalkingSound;
 
+    public float sfxDelay;
+    public Vector3 prevPos;
+    public float deltaPos;
+    private bool sfxStopped;
+
     private void Start()
     {
         audiosource = GetComponent<AudioSource>();
         audiosource.enabled = true;
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+
+        StartCoroutine(sfxStepDelay());
     }
 
     private void Update()
@@ -42,13 +49,6 @@ public class PlayerMovement : MonoBehaviour
         MyInput();
         SpeedControl();
 
-        if(horizontalInput == 0 && verticalInput == 0){
-            audiosource.enabled = false;
-        }
-        else{
-            audiosource.enabled = true;
-        }
-
         // handle drag
         if (grounded)
         {
@@ -56,6 +56,16 @@ public class PlayerMovement : MonoBehaviour
         }
         else
             rb.drag = 0;
+
+        if ((horizontalInput != 0 || verticalInput != 0))
+        {
+            if (sfxStopped == true)
+                audiosource.enabled = true;
+            sfxStopped = false;
+        }
+        else
+            sfxStopped = true;
+
     }
 
     private void FixedUpdate()
@@ -86,5 +96,27 @@ public class PlayerMovement : MonoBehaviour
             Vector3 limitedVel = flatVel.normalized * moveSpeed;
             rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
         }
+    }
+
+
+    private IEnumerator sfxStepDelay()
+    {
+        prevPos = transform.position; 
+        if (horizontalInput == 0 && verticalInput == 0)
+        {
+            audiosource.enabled = false;
+            bool sfxStopped = true;  
+        }
+        else if (deltaPos > 1f)
+        {
+            audiosource.enabled = false;
+            audiosource.enabled = true;
+        }
+
+        yield return new WaitForSeconds(sfxDelay);
+        deltaPos = Vector3.Distance(prevPos, transform.position);
+        
+        Debug.Log(deltaPos);
+        StartCoroutine(sfxStepDelay());
     }
 }
