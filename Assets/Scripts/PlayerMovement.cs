@@ -23,8 +23,13 @@ public class PlayerMovement : MonoBehaviour
 
     Rigidbody rb;
 
+    public AudioSource audiosource;
+    public AudioClip WalkingSound;
+
     private void Start()
     {
+        audiosource = GetComponent<AudioSource>();
+        audiosource.enabled = true;
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
     }
@@ -36,6 +41,13 @@ public class PlayerMovement : MonoBehaviour
 
         MyInput();
         SpeedControl();
+
+        if(horizontalInput == 0 && verticalInput == 0){
+            audiosource.enabled = false;
+        }
+        else{
+            audiosource.enabled = true;
+        }
 
         // handle drag
         if (grounded)
